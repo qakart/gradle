@@ -37,16 +37,18 @@ import java.util.Set;
 public abstract class AbstractWorkerDaemonExecutor<T> implements WorkerDaemonExecutor {
     private final WorkerDaemonFactory workerDaemonFactory;
     private final JavaForkOptions javaForkOptions;
+    private final WorkerDaemonStarter workerDaemonStarter;
     private final Set<File> classpath = Sets.newLinkedHashSet();
     private final Class<? extends T> implementationClass;
     private final Class<? extends WorkerDaemonProtocol> serverImplementationClass;
     private Serializable[] params = new Serializable[]{};
 
-    public AbstractWorkerDaemonExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends T> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass) {
+    public AbstractWorkerDaemonExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends T> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass, WorkerDaemonStarter workerDaemonStarter) {
         this.workerDaemonFactory = workerDaemonFactory;
         this.javaForkOptions = new DefaultJavaForkOptions(fileResolver);
         this.implementationClass = implementationClass;
         this.serverImplementationClass = serverImplementationClass;
+        this.workerDaemonStarter = workerDaemonStarter;
         this.javaForkOptions.workingDir(new File("").getAbsoluteFile());
     }
 
@@ -90,7 +92,7 @@ public abstract class AbstractWorkerDaemonExecutor<T> implements WorkerDaemonExe
         final WorkSpec spec = getSpec();
         final WorkerDaemonAction action = getAction();
         try {
-            WorkerDaemon daemon = workerDaemonFactory.getDaemon(serverImplementationClass, getForkOptions().getWorkingDir(), getDaemonForkOptions());
+            WorkerDaemon daemon = workerDaemonFactory.getDaemon(serverImplementationClass, getForkOptions().getWorkingDir(), getDaemonForkOptions(), workerDaemonStarter);
             WorkerDaemonResult result = daemon.execute(action, spec);
             if (!result.isSuccess()) {
                 throw result.getException();

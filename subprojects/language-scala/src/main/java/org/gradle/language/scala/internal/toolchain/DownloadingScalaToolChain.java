@@ -25,6 +25,7 @@ import org.gradle.api.artifacts.dsl.DependencyHandler;
 import org.gradle.process.internal.daemon.WorkerDaemonManager;
 import org.gradle.language.scala.ScalaPlatform;
 import org.gradle.platform.base.internal.toolchain.ToolProvider;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 
 import java.io.File;
 import java.util.Set;
@@ -33,14 +34,16 @@ public class DownloadingScalaToolChain implements ScalaToolChainInternal {
     private final File gradleUserHomeDir;
     private final File rootProjectDir;
     private final WorkerDaemonManager compilerDaemonManager;
+    private final WorkerDaemonStarter compilerDaemonStarter;
     private final ConfigurationContainer configurationContainer;
     private final DependencyHandler dependencyHandler;
     private final JavaVersion javaVersion;
 
-    public DownloadingScalaToolChain(File gradleUserHomeDir, File rootProjectDir, WorkerDaemonManager compilerDaemonManager, ConfigurationContainer configurationContainer, DependencyHandler dependencyHandler) {
+    public DownloadingScalaToolChain(File gradleUserHomeDir, File rootProjectDir, WorkerDaemonManager compilerDaemonManager, WorkerDaemonStarter compilerDaemonStarter, ConfigurationContainer configurationContainer, DependencyHandler dependencyHandler) {
         this.gradleUserHomeDir = gradleUserHomeDir;
         this.rootProjectDir = rootProjectDir;
         this.compilerDaemonManager = compilerDaemonManager;
+        this.compilerDaemonStarter = compilerDaemonStarter;
         this.configurationContainer = configurationContainer;
         this.dependencyHandler = dependencyHandler;
         this.javaVersion = JavaVersion.current();
@@ -63,7 +66,7 @@ public class DownloadingScalaToolChain implements ScalaToolChainInternal {
             Configuration zincClasspath = resolveDependency("com.typesafe.zinc:zinc:" + DefaultScalaToolProvider.DEFAULT_ZINC_VERSION);
             Set<File> resolvedScalaClasspath = scalaClasspath.resolve();
             Set<File> resolvedZincClasspath = zincClasspath.resolve();
-            return new DefaultScalaToolProvider(gradleUserHomeDir, rootProjectDir, compilerDaemonManager, resolvedScalaClasspath, resolvedZincClasspath);
+            return new DefaultScalaToolProvider(gradleUserHomeDir, rootProjectDir, compilerDaemonManager, compilerDaemonStarter, resolvedScalaClasspath, resolvedZincClasspath);
 
         } catch(ResolveException resolveException) {
             return new NotFoundScalaToolProvider(resolveException);

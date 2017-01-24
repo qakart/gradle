@@ -24,6 +24,7 @@ import org.gradle.api.tasks.compile.GroovyForkOptions;
 import org.gradle.language.base.internal.compile.Compiler;
 import org.gradle.process.internal.daemon.WorkerDaemonFactory;
 import org.gradle.process.internal.daemon.DaemonForkOptions;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 
 import java.io.File;
 import java.util.Arrays;
@@ -33,8 +34,8 @@ public class DaemonGroovyCompiler extends AbstractDaemonCompiler<GroovyJavaJoint
     private final static Iterable<String> SHARED_PACKAGES = Arrays.asList("groovy", "org.codehaus.groovy", "groovyjarjarantlr", "groovyjarjarasm", "groovyjarjarcommonscli", "org.apache.tools.ant", "com.sun.tools.javac");
     private final ClassPathRegistry classPathRegistry;
 
-    public DaemonGroovyCompiler(File daemonWorkingDir, Compiler<GroovyJavaJointCompileSpec> delegate, ClassPathRegistry classPathRegistry, WorkerDaemonFactory daemonFactory) {
-        super(daemonWorkingDir, delegate, daemonFactory);
+    public DaemonGroovyCompiler(File daemonWorkingDir, Compiler<GroovyJavaJointCompileSpec> delegate, ClassPathRegistry classPathRegistry, WorkerDaemonFactory daemonFactory, WorkerDaemonStarter daemonStarter) {
+        super(daemonWorkingDir, delegate, daemonFactory, daemonStarter);
         this.classPathRegistry = classPathRegistry;
     }
 

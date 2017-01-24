@@ -25,18 +25,21 @@ import org.gradle.api.internal.tasks.compile.daemon.InProcessCompilerDaemonFacto
 import org.gradle.api.tasks.compile.GroovyCompileOptions;
 import org.gradle.language.base.internal.compile.Compiler;
 import org.gradle.language.base.internal.compile.CompilerFactory;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 
 public class GroovyCompilerFactory implements CompilerFactory<GroovyJavaJointCompileSpec> {
     private final ProjectInternal project;
     private final JavaCompilerFactory javaCompilerFactory;
     private final WorkerDaemonManager compilerDaemonFactory;
+    private final WorkerDaemonStarter compilerDaemonStarter;
     private final InProcessCompilerDaemonFactory inProcessCompilerDaemonFactory;
 
-    public GroovyCompilerFactory(ProjectInternal project, JavaCompilerFactory javaCompilerFactory, WorkerDaemonManager compilerDaemonManager,
+    public GroovyCompilerFactory(ProjectInternal project, JavaCompilerFactory javaCompilerFactory, WorkerDaemonManager compilerDaemonManager, WorkerDaemonStarter compilerDaemonStarter,
                                  InProcessCompilerDaemonFactory inProcessCompilerDaemonFactory) {
         this.project = project;
         this.javaCompilerFactory = javaCompilerFactory;
         this.compilerDaemonFactory = compilerDaemonManager;
+        this.compilerDaemonStarter = compilerDaemonStarter;
         this.inProcessCompilerDaemonFactory = inProcessCompilerDaemonFactory;
     }
 
@@ -51,7 +54,7 @@ public class GroovyCompilerFactory implements CompilerFactory<GroovyJavaJointCom
         } else {
             daemonFactory = inProcessCompilerDaemonFactory;
         }
-        groovyCompiler = new DaemonGroovyCompiler(project.getRootProject().getProjectDir(), groovyCompiler, project.getServices().get(ClassPathRegistry.class), daemonFactory);
+        groovyCompiler = new DaemonGroovyCompiler(project.getRootProject().getProjectDir(), groovyCompiler, project.getServices().get(ClassPathRegistry.class), daemonFactory, compilerDaemonStarter);
         return new NormalizingGroovyCompiler(groovyCompiler);
     }
 }

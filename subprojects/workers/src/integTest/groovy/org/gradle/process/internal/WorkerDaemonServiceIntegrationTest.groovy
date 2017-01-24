@@ -21,6 +21,7 @@ import org.gradle.api.JavaVersion
 import org.gradle.api.specs.Spec
 import org.gradle.execution.taskgraph.DefaultTaskExecutionPlan
 import org.gradle.integtests.fixtures.AvailableJavaHomes
+import org.gradle.integtests.fixtures.executer.GradleContextualExecuter
 import org.gradle.integtests.fixtures.jvm.JvmInstallation
 import org.gradle.internal.jvm.Jvm
 import org.gradle.test.fixtures.server.http.BlockingHttpServer
@@ -29,6 +30,7 @@ import org.gradle.util.TestPrecondition
 import org.gradle.util.TextUtil
 import org.junit.Assume
 import org.junit.Rule
+import spock.lang.IgnoreIf
 
 import static org.hamcrest.CoreMatchers.*
 
@@ -170,6 +172,26 @@ class WorkerDaemonServiceIntegrationTest extends AbstractWorkerDaemonServiceInte
         """
 
         when:
+        succeeds("reuseDaemon")
+
+        then:
+        assertSameDaemonWasUsed("runInDaemon", "reuseDaemon")
+    }
+
+    def "re-uses an existing compatible daemon across separate builds" () {
+        executer.requireDaemon()
+        executer.requireIsolatedDaemons()
+
+        withRunnableClassInBuildSrc()
+
+        buildFile << """
+            task runInDaemon(type: DaemonTask)
+            
+            task reuseDaemon(type: DaemonTask)
+        """
+
+        when:
+        succeeds("runInDaemon")
         succeeds("reuseDaemon")
 
         then:

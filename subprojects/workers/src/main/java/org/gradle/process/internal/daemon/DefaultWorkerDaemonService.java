@@ -23,14 +23,16 @@ import org.gradle.process.daemon.WorkerDaemonService;
 public class DefaultWorkerDaemonService implements WorkerDaemonService {
     private final WorkerDaemonFactory workerDaemonFactory;
     private final FileResolver fileResolver;
+    private final WorkerDaemonStarter workerDaemonStarter;
 
-    public DefaultWorkerDaemonService(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver) {
+    public DefaultWorkerDaemonService(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, WorkerDaemonStarter workerDaemonStarter) {
         this.workerDaemonFactory = workerDaemonFactory;
         this.fileResolver = fileResolver;
+        this.workerDaemonStarter = workerDaemonStarter;
     }
 
     @Override
     public WorkerDaemonExecutor daemonRunnable(Class<? extends Runnable> runnableClass) {
-        return new WorkerDaemonRunnableExecutor(workerDaemonFactory, fileResolver, runnableClass, WorkerDaemonServer.class);
+        return new WorkerDaemonRunnableExecutor(workerDaemonFactory, fileResolver, runnableClass, WorkerDaemonServer.class, workerDaemonStarter);
     }
 }

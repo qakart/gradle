@@ -28,7 +28,7 @@ class WorkerDaemonExpirationTest extends Specification {
     def twoGbOptions = new DaemonForkOptions('2g', '2g', ['two-gb-options'])
     def threeGbOptions = new DaemonForkOptions('3g', '3g', ['three-gb-options'])
     def memoryInfo = Mock(MemoryInfo) { getTotalPhysicalMemory() >> MemoryAmount.ofGigaBytes(8).bytes }
-    def daemonStarter = Mock(WorkerDaemonStarter) {
+    def daemonStarter = Mock(DefaultWorkerDaemonStarter) {
         startDaemon(_, _, _) >> { Class<? extends WorkerDaemonProtocol> impl, File workDir, DaemonForkOptions forkOptions ->
             Mock(WorkerDaemonClient) {
                 getForkOptions() >> forkOptions
@@ -38,7 +38,7 @@ class WorkerDaemonExpirationTest extends Specification {
             }
         }
     }
-    def clientsManager = new WorkerDaemonClientsManager(daemonStarter)
+    def clientsManager = new WorkerDaemonClientsManager()
     def expiration = new WorkerDaemonExpiration(clientsManager, memoryInfo)
 
     def "expires least recently used idle worker daemon to free system memory when requested to release some memory"() {
@@ -148,7 +148,7 @@ class WorkerDaemonExpirationTest extends Specification {
     }
 
     private WorkerDaemonClient reserveNewClient(DaemonForkOptions forkOptions) {
-        return clientsManager.reserveNewClient(WorkerDaemonServer, workingDir, forkOptions)
+        return clientsManager.reserveNewClient(WorkerDaemonServer, workingDir, forkOptions, daemonStarter)
     }
 
     private WorkerDaemonClient reserveIdleClient(DaemonForkOptions forkOptions) {

@@ -24,8 +24,8 @@ import java.io.Serializable;
 
 public class WorkerDaemonRunnableExecutor extends AbstractWorkerDaemonExecutor<Runnable> {
 
-    WorkerDaemonRunnableExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends Runnable> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass) {
-        super(workerDaemonFactory, fileResolver, implementationClass, serverImplementationClass);
+    WorkerDaemonRunnableExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends Runnable> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass, WorkerDaemonStarter workerDaemonStarter) {
+        super(workerDaemonFactory, fileResolver, implementationClass, serverImplementationClass, workerDaemonStarter);
     }
 
     @Override

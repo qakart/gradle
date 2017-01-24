@@ -16,10 +16,7 @@
 
 package org.gradle.process.internal.daemon
 
-import org.gradle.internal.operations.BuildOperationWorkerRegistry
 import spock.lang.Specification
-
-import static org.gradle.internal.operations.BuildOperationWorkerRegistry.*
 
 class WorkerDaemonClientTest extends Specification {
     WorkerDaemonClient client
@@ -49,61 +46,12 @@ class WorkerDaemonClientTest extends Specification {
         client.uses == 5
     }
 
-    def "build operation is started and finished when client is executed"() {
-        def operation = Mock(Operation)
-        def completion = Mock(Completion)
-
-        given:
-        client = client(operation)
-
-        when:
-        client.execute(Stub(WorkerDaemonAction), Stub(WorkSpec))
-
-        then:
-        1 * operation.operationStart() >> completion
-        1 * completion.operationFinish()
-    }
-
-    def "build operation is finished even if worker fails"() {
-        def operation = Mock(Operation)
-        def completion = Mock(Completion)
-        def workerDaemonWorker = Mock(WorkerDaemonWorker)
-
-        given:
-        client = client(operation, workerDaemonWorker)
-
-        when:
-        client.execute(Stub(WorkerDaemonAction), Stub(WorkSpec))
-
-        then:
-        thrown(RuntimeException)
-        1 * workerDaemonWorker.execute(_, _) >> { throw new RuntimeException() }
-        1 * operation.operationStart() >> completion
-        1 * completion.operationFinish()
-    }
-
-    Operation operation() {
-        Operation operation = Mock(Operation)
-        Completion completion = Mock(Completion)
-        _ * operation.operationStart() >> completion
-        return operation
-    }
-
     WorkerDaemonClient client() {
-        return client(operation(), Mock(WorkerDaemonWorker))
-    }
-
-    WorkerDaemonClient client(Operation operation) {
-        return client(operation, Mock(WorkerDaemonWorker))
+        return client(Mock(WorkerDaemonWorker))
     }
 
     WorkerDaemonClient client(WorkerDaemonWorker workerDaemonWorker) {
-        return client(operation(), workerDaemonWorker)
-    }
-
-    WorkerDaemonClient client(Operation operation, WorkerDaemonWorker workerDaemonWorker) {
-        def buildOperationWorkerRegistry = Mock(BuildOperationWorkerRegistry) { _ * getCurrent() >> operation }
         def daemonForkOptions = Mock(DaemonForkOptions)
-        return new WorkerDaemonClient(buildOperationWorkerRegistry, daemonForkOptions, workerDaemonWorker)
+        return new WorkerDaemonClient(daemonForkOptions, workerDaemonWorker)
     }
 }

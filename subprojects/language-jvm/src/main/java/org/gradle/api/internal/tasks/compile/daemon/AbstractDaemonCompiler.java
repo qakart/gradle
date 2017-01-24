@@ -26,6 +26,7 @@ import org.gradle.process.internal.daemon.WorkerDaemonResult;
 import org.gradle.process.internal.daemon.WorkerDaemon;
 import org.gradle.process.internal.daemon.WorkerDaemonFactory;
 import org.gradle.process.internal.daemon.WorkerDaemonServer;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 
 import java.io.File;
 
@@ -33,11 +34,13 @@ public abstract class AbstractDaemonCompiler<T extends CompileSpec> implements C
     private final Compiler<T> delegate;
     private final WorkerDaemonFactory compilerDaemonFactory;
     private final File daemonWorkingDir;
+    private final WorkerDaemonStarter compilerDaemonStarter;
 
-    public AbstractDaemonCompiler(File daemonWorkingDir, Compiler<T> delegate, WorkerDaemonFactory compilerDaemonFactory) {
+    public AbstractDaemonCompiler(File daemonWorkingDir, Compiler<T> delegate, WorkerDaemonFactory compilerDaemonFactory, WorkerDaemonStarter compilerDaemonStarter) {
         this.daemonWorkingDir = daemonWorkingDir;
         this.delegate = delegate;
         this.compilerDaemonFactory = compilerDaemonFactory;
+        this.compilerDaemonStarter = compilerDaemonStarter;
     }
 
     public Compiler<T> getDelegate() {
@@ -47,7 +50,7 @@ public abstract class AbstractDaemonCompiler<T extends CompileSpec> implements C
     @Override
     public WorkResult execute(T spec) {
         DaemonForkOptions daemonForkOptions = toDaemonOptions(spec);
-        WorkerDaemon daemon = compilerDaemonFactory.getDaemon(CompilerDaemonServer.class, daemonWorkingDir, daemonForkOptions);
+        WorkerDaemon daemon = compilerDaemonFactory.getDaemon(CompilerDaemonServer.class, daemonWorkingDir, daemonForkOptions, compilerDaemonStarter);
         WorkerDaemonResult result = daemon.execute(adapter(delegate), spec);
         if (result.isSuccess()) {
             return result;

@@ -35,10 +35,7 @@ public class WorkerDaemonClientsManager {
     private final List<WorkerDaemonClient> allClients = new ArrayList<WorkerDaemonClient>();
     private final List<WorkerDaemonClient> idleClients = new ArrayList<WorkerDaemonClient>();
 
-    private WorkerDaemonStarter workerDaemonStarter;
-
-    public WorkerDaemonClientsManager(WorkerDaemonStarter workerDaemonStarter) {
-        this.workerDaemonStarter = workerDaemonStarter;
+    public WorkerDaemonClientsManager() {
     }
 
     public WorkerDaemonClient reserveIdleClient(DaemonForkOptions forkOptions) {
@@ -59,7 +56,7 @@ public class WorkerDaemonClientsManager {
         }
     }
 
-    public WorkerDaemonClient reserveNewClient(Class<? extends WorkerDaemonProtocol> serverImplementationClass, File workingDir, DaemonForkOptions forkOptions) {
+    public WorkerDaemonClient reserveNewClient(Class<? extends WorkerDaemonProtocol> serverImplementationClass, File workingDir, DaemonForkOptions forkOptions, WorkerDaemonStarter workerDaemonStarter) {
         //allow the daemon to be started concurrently
         WorkerDaemonClient client = workerDaemonStarter.startDaemon(serverImplementationClass, workingDir, forkOptions);
         synchronized (lock) {

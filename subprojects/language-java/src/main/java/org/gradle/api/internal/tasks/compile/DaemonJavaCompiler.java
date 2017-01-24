@@ -20,6 +20,7 @@ import org.gradle.process.internal.daemon.WorkerDaemonFactory;
 import org.gradle.process.internal.daemon.DaemonForkOptions;
 import org.gradle.api.tasks.compile.ForkOptions;
 import org.gradle.language.base.internal.compile.Compiler;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 
 import java.io.File;
 import java.util.Collections;
@@ -27,8 +28,8 @@ import java.util.Collections;
 public class DaemonJavaCompiler extends AbstractDaemonCompiler<JavaCompileSpec> {
     private static final Iterable<String> SHARED_PACKAGES = Collections.singleton("com.sun.tools.javac");
 
-    public DaemonJavaCompiler(File daemonWorkingDir, Compiler<JavaCompileSpec> delegate, WorkerDaemonFactory compilerDaemonFactory) {
-        super(daemonWorkingDir, delegate, compilerDaemonFactory);
+    public DaemonJavaCompiler(File daemonWorkingDir, Compiler<JavaCompileSpec> delegate, WorkerDaemonFactory compilerDaemonFactory, WorkerDaemonStarter compilerDaemonStarter) {
+        super(daemonWorkingDir, delegate, compilerDaemonFactory, compilerDaemonStarter);
     }
 
     @Override

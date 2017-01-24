@@ -40,6 +40,7 @@ import org.gradle.api.tasks.TaskAction;
 import org.gradle.api.tasks.WorkResult;
 import org.gradle.language.base.internal.compile.Compiler;
 import org.gradle.process.internal.daemon.WorkerDaemonManager;
+import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 import org.gradle.util.GFileUtils;
 
 import java.io.File;
@@ -68,9 +69,10 @@ public class GroovyCompile extends AbstractCompile {
         if (compiler == null) {
             ProjectInternal projectInternal = (ProjectInternal) getProject();
             WorkerDaemonManager compilerDaemonManager = getServices().get(WorkerDaemonManager.class);
+            WorkerDaemonStarter compilerDaemonStarter = getServices().get(WorkerDaemonStarter.class);
             InProcessCompilerDaemonFactory inProcessCompilerDaemonFactory = getServices().get(InProcessCompilerDaemonFactory.class);
             JavaCompilerFactory javaCompilerFactory = getServices().get(JavaCompilerFactory.class);
-            GroovyCompilerFactory groovyCompilerFactory = new GroovyCompilerFactory(projectInternal, javaCompilerFactory, compilerDaemonManager, inProcessCompilerDaemonFactory);
+            GroovyCompilerFactory groovyCompilerFactory = new GroovyCompilerFactory(projectInternal, javaCompilerFactory, compilerDaemonManager, compilerDaemonStarter, inProcessCompilerDaemonFactory);
             Compiler<GroovyJavaJointCompileSpec> delegatingCompiler = groovyCompilerFactory.newCompiler(spec);
             compiler = new CleaningGroovyCompiler(delegatingCompiler, getOutputs());
         }

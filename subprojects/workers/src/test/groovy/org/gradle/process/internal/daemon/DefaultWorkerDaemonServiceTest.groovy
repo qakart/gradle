@@ -23,8 +23,9 @@ import spock.lang.Specification
 class DefaultWorkerDaemonServiceTest extends Specification {
     def workerDaemonFactory = Mock(WorkerDaemonFactory)
     def fileResolver = Mock(FileResolver)
+    def workerDaemonStarter = Mock(WorkerDaemonStarter)
     def runnable = Mock(Runnable)
-    def workerDaemonService = new DefaultWorkerDaemonService(workerDaemonFactory, fileResolver)
+    def workerDaemonService = new DefaultWorkerDaemonService(workerDaemonFactory, fileResolver, workerDaemonStarter)
 
     def "returns a daemon runnable executor"() {
         when:

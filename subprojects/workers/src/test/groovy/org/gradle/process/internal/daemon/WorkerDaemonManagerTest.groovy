@@ -26,6 +26,7 @@ class WorkerDaemonManagerTest extends Specification {
     def clientsManager = Mock(WorkerDaemonClientsManager)
     def client = Mock(WorkerDaemonClient)
     def memoryManager = Mock(MemoryManager)
+    def workerDaemonStarter = Mock(WorkerDaemonStarter)
 
     @Subject manager = new WorkerDaemonManager(clientsManager, memoryManager, Stub(MemoryInfo))
 
@@ -37,7 +38,7 @@ class WorkerDaemonManagerTest extends Specification {
 
     def "getting a worker daemon does not assume client use"() {
         when:
-        manager.getDaemon(serverImpl.class, workingDir, options);
+        manager.getDaemon(serverImpl.class, workingDir, options, workerDaemonStarter);
 
         then:
         0 * clientsManager._
@@ -45,13 +46,13 @@ class WorkerDaemonManagerTest extends Specification {
 
     def "new client is created when daemon is executed and no idle clients found"() {
         when:
-        manager.getDaemon(serverImpl.class, workingDir, options).execute(worker, spec)
+        manager.getDaemon(serverImpl.class, workingDir, options, workerDaemonStarter).execute(worker, spec)
 
         then:
         1 * clientsManager.reserveIdleClient(options) >> null
 
         then:
-        1 * clientsManager.reserveNewClient(serverImpl.class, workingDir, options) >> client
+        1 * clientsManager.reserveNewClient(serverImpl.class, workingDir, options, workerDaemonStarter) >> client
 
         then:
         1 * client.execute(worker, spec)
@@ -63,7 +64,7 @@ class WorkerDaemonManagerTest extends Specification {
 
     def "idle client is reused when daemon is executed"() {
         when:
-        manager.getDaemon(serverImpl.class, workingDir, options).execute(worker, spec)
+        manager.getDaemon(serverImpl.class, workingDir, options, workerDaemonStarter).execute(worker, spec)
 
         then:
         1 * clientsManager.reserveIdleClient(options) >> client
@@ -78,7 +79,7 @@ class WorkerDaemonManagerTest extends Specification {
 
     def "client is released even if execution fails"() {
         when:
-        manager.getDaemon(serverImpl.class, workingDir, options).execute(worker, spec)
+        manager.getDaemon(serverImpl.class, workingDir, options, workerDaemonStarter).execute(worker, spec)
 
         then:
         1 * clientsManager.reserveIdleClient(options) >> client

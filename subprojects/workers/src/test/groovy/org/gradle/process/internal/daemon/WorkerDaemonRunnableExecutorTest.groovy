@@ -30,12 +30,13 @@ class WorkerDaemonRunnableExecutorTest extends Specification {
     def fileResolver = Mock(FileResolver)
     def factory = Mock(Factory)
     def serverImpl = Mock(WorkerDaemonProtocol)
+    def workerDaemonStarter = Mock(WorkerDaemonStarter)
     def workerDaemonRunnableExecutor
 
     def setup() {
         _ * fileResolver.resolveLater(_) >> factory
         1 * factory.create()
-        workerDaemonRunnableExecutor = new WorkerDaemonRunnableExecutor(workerDaemonFactory, fileResolver, TestRunnable.class, serverImpl.class)
+        workerDaemonRunnableExecutor = new WorkerDaemonRunnableExecutor(workerDaemonFactory, fileResolver, TestRunnable.class, serverImpl.class, workerDaemonStarter)
     }
 
     def "executor executes the given runnable in a daemon"() {
@@ -46,7 +47,7 @@ class WorkerDaemonRunnableExecutorTest extends Specification {
         workerDaemonRunnableExecutor.params(executed).execute()
 
         then:
-        1 * workerDaemonFactory.getDaemon(_, _, _) >> workerDaemon
+        1 * workerDaemonFactory.getDaemon(_, _, _, _) >> workerDaemon
         1 * workerDaemon.execute(_, _) >> { action, spec ->
             action.execute(spec)
             return new WorkerDaemonResult(true, null)

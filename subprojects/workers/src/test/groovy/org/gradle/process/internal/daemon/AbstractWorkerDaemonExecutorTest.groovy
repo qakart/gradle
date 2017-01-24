@@ -28,12 +28,13 @@ class AbstractWorkerDaemonExecutorTest extends Specification {
     def factory = Mock(Factory)
     def actionImpl = Mock(Serializable)
     def serverImpl = Mock(WorkerDaemonProtocol)
+    def workerDaemonStarter = Mock(WorkerDaemonStarter)
     TestExecutor testExecutor
 
     def setup() {
         _ * fileResolver.resolveLater(_) >> factory
         _ * fileResolver.resolve(_) >> { files -> files[0] }
-        testExecutor = new TestExecutor(workerDaemonFactory, fileResolver, actionImpl.class, serverImpl.class)
+        testExecutor = new TestExecutor(workerDaemonFactory, fileResolver, actionImpl.class, serverImpl.class, workerDaemonStarter)
     }
 
     def "can convert javaForkOptions to daemonForkOptions"() {
@@ -72,8 +73,8 @@ class AbstractWorkerDaemonExecutorTest extends Specification {
     }
 
     private static class TestExecutor extends AbstractWorkerDaemonExecutor<Serializable> {
-        TestExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends Serializable> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass) {
-            super(workerDaemonFactory, fileResolver, implementationClass, serverImplementationClass)
+        TestExecutor(WorkerDaemonFactory workerDaemonFactory, FileResolver fileResolver, Class<? extends Serializable> implementationClass, Class<? extends WorkerDaemonProtocol> serverImplementationClass, WorkerDaemonStarter workerDaemonStarter) {
+            super(workerDaemonFactory, fileResolver, implementationClass, serverImplementationClass, workerDaemonStarter)
         }
 
         @Override

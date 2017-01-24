@@ -22,9 +22,11 @@ import org.gradle.internal.operations.BuildOperationWorkerRegistry;
 import org.gradle.internal.service.ServiceRegistration;
 import org.gradle.internal.service.scopes.PluginServiceRegistry;
 import org.gradle.process.daemon.WorkerDaemonService;
+import org.gradle.process.internal.daemon.BuildOperationWorkerDaemonManager;
 import org.gradle.process.internal.daemon.DefaultWorkerDaemonService;
 import org.gradle.process.internal.daemon.WorkerDaemonClientsManager;
 import org.gradle.process.internal.daemon.WorkerDaemonManager;
+import org.gradle.process.internal.daemon.DefaultWorkerDaemonStarter;
 import org.gradle.process.internal.daemon.WorkerDaemonStarter;
 import org.gradle.process.internal.health.memory.MemoryInfo;
 import org.gradle.process.internal.health.memory.MemoryManager;
@@ -33,6 +35,7 @@ import org.gradle.process.internal.worker.WorkerProcessFactory;
 public class WorkersServices implements PluginServiceRegistry {
     @Override
     public void registerGlobalServices(ServiceRegistration registration) {
+        registration.addProvider(new GlobalScopeServices());
     }
 
     @Override
@@ -52,11 +55,9 @@ public class WorkersServices implements PluginServiceRegistry {
     public void registerProjectServices(ServiceRegistration registration) {
     }
 
-    private static class BuildSessionScopeServices {
-        WorkerDaemonClientsManager createWorkerDaemonClientsManager(BuildOperationWorkerRegistry buildOperationWorkerRegistry,
-                                                                    WorkerProcessFactory workerFactory,
-                                                                    StartParameter startParameter) {
-            return new WorkerDaemonClientsManager(new WorkerDaemonStarter(buildOperationWorkerRegistry, workerFactory, startParameter));
+    private static class GlobalScopeServices {
+        WorkerDaemonClientsManager createWorkerDaemonClientsManager() {
+            return new WorkerDaemonClientsManager();
         }
 
         WorkerDaemonManager createWorkerDaemonManager(WorkerDaemonClientsManager workerDaemonClientsManager,
@@ -64,10 +65,22 @@ public class WorkersServices implements PluginServiceRegistry {
                                                       MemoryInfo memoryInfo) {
             return new WorkerDaemonManager(workerDaemonClientsManager, memoryManager, memoryInfo);
         }
+    }
 
-        WorkerDaemonService createWorkerDaemonService(WorkerDaemonManager workerDaemonManager,
-                                                      FileResolver fileResolver) {
-            return new DefaultWorkerDaemonService(workerDaemonManager, fileResolver);
+    private static class BuildSessionScopeServices {
+        WorkerDaemonStarter createWorkerDaemonStarter(WorkerProcessFactory workerProcessFactory,
+                                                      StartParameter startParameter) {
+            return new DefaultWorkerDaemonStarter(workerProcessFactory, startParameter);
+        }
+
+        WorkerDaemonService createWorkerDaemonService(BuildOperationWorkerDaemonManager workerDaemonManager,
+                                                      FileResolver fileResolver,
+                                                      WorkerDaemonStarter workerDaemonStarter) {
+            return new DefaultWorkerDaemonService(workerDaemonManager, fileResolver, workerDaemonStarter);
+        }
+
+        BuildOperationWorkerDaemonManager createWorkerDaemonFactory(WorkerDaemonManager workerDaemonManager, BuildOperationWorkerRegistry buildOperationWorkerRegistry) {
+            return new BuildOperationWorkerDaemonManager(workerDaemonManager, buildOperationWorkerRegistry);
         }
     }
 }
