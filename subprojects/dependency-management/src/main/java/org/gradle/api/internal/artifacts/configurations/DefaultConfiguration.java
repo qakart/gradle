@@ -22,6 +22,7 @@ import groovy.lang.Closure;
 import org.gradle.api.Action;
 import org.gradle.api.DomainObjectSet;
 import org.gradle.api.InvalidUserDataException;
+import org.gradle.api.Transformer;
 import org.gradle.api.artifacts.ArtifactCollection;
 import org.gradle.api.artifacts.ArtifactView;
 import org.gradle.api.artifacts.ConfigurablePublishArtifact;
@@ -441,12 +442,11 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
         if (resolvedState != UNRESOLVED) {
             throw new IllegalStateException("Graph resolution already performed");
         }
-        buildOperationExecutor.run("Resolve dependencies " + identityPath, new Action<BuildOperationContext>() {
+        buildOperationExecutor.run("Resolve dependency graph " + identityPath, new Action<BuildOperationContext>() {
             @Override
             public void execute(BuildOperationContext buildOperationContext) {
                 ResolvableDependencies incoming = getIncoming();
                 performPreResolveActions(incoming);
-
                 cachedResolverResults = new DefaultResolverResults();
                 resolver.resolveGraph(DefaultConfiguration.this, cachedResolverResults);
                 dependenciesModified = false;
@@ -491,7 +491,7 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
         if (resolvedState != GRAPH_RESOLVED) {
             throw new IllegalStateException("Cannot resolve artifacts before graph has been resolved.");
         }
-        resolver.resolveArtifacts(this, cachedResolverResults);
+        resolver.resolveArtifacts(DefaultConfiguration.this, cachedResolverResults);
         resolvedState = ARTIFACTS_RESOLVED;
     }
 
@@ -506,7 +506,7 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
         return new ConfigurationTaskDependency(dependencySpec, requestedAttributes, componentIdentifierSpec);
     }
 
-    private Set<File> doGetFiles(Spec<? super Dependency> dependencySpec, AttributeContainerInternal requestedAttributes, Spec<? super ComponentIdentifier> componentIdentifierSpec) {
+    private Set<File> doGetFiles(final Spec<? super Dependency> dependencySpec, final AttributeContainerInternal requestedAttributes, final Spec<? super ComponentIdentifier> componentIdentifierSpec) {
         synchronized (resolutionLock) {
             resolveToStateOrLater(ARTIFACTS_RESOLVED);
             return cachedResolverResults.getVisitedArtifacts().select(dependencySpec, requestedAttributes, componentIdentifierSpec).collectFiles(new LinkedHashSet<File>());
@@ -851,7 +851,7 @@ public class DefaultConfiguration extends AbstractFileCollection implements Conf
     @Override
     public Configuration attributes(Map<?, ?> attributes) {
         validateMutation(MutationType.ATTRIBUTES);
-        ((DefaultMutableAttributeContainer)configurationAttributes).addFromPolymorphicMap(attributes);
+        ((DefaultMutableAttributeContainer) configurationAttributes).addFromPolymorphicMap(attributes);
         return this;
     }
 
